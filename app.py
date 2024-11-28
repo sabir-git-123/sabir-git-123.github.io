@@ -8,10 +8,11 @@ def save_order(order):
     con = sqlite3.connect("orders.db")
     cur = con.cursor()
     cur.execute(
-        "INSERT INTO orders(name,drink,flavor,topping,topping,topping,topping) VALUES(?,?,?,?,?,?,?);",
+        "INSERT INTO orders(name, filling, sauce, size1, size2, acute, drink) VALUES(?,?,?,?,?,?,?);",
         (order["name"], order["filling"], order["sauce"], order["size1"], order["size2"], order["acute"], order["drink"]),
     )
     con.commit()
+    con.close()
     return
 
 def get_orders():
@@ -20,16 +21,25 @@ def get_orders():
     cur = con.cursor()
     cur.execute("SELECT * FROM orders;")
     rows = cur.fetchall()
-
+    con.close()
     return rows
 
+# Удаление существующей таблицы и создание новой
+con = sqlite3.connect("orders.db")
+cur = con.cursor()
+cur.execute("DROP TABLE IF EXISTS orders;")
+con.commit()
+con.close()
+
+# Создание новой таблицы
 con = sqlite3.connect("orders.db")
 cur = con.cursor()
 cur.execute(
-    "CREATE TABLE IF NOT EXISTS orders(name, filling, sauce, size1, size2, acute, drink);")
+    "CREATE TABLE IF NOT EXISTS orders(name TEXT, filling TEXT, sauce TEXT, size1 TEXT, size2 TEXT, acute TEXT, drink TEXT);")
+con.commit()
+con.close()
 
 app = Flask(__name__)
-
 
 @app.route("/")
 def index():
@@ -56,24 +66,14 @@ def order():
           )
     return render_template("order.html", filling=filling, sauce=sauce, size1=size1, size2=size2, acute=acute, drink=drink )
 
-
 @app.route("/list", methods=["GET"])
 def list():
     orders = get_orders()
-
     return render_template("list.html", orders=orders)
 
-
-
 def read_menu(filename):
-    f = open(filename)
-    temp = f.readlines()
-    result = []
-    for item in temp:
-        new_item = item.strip()
-        result.append(new_item)
-
-    return result
+    with open(filename) as f:
+        return [item.strip() for item in f.readlines()]
 
 filling = read_menu("filling.txt")
 sauce = read_menu("sauce.txt")
@@ -82,3 +82,5 @@ size2 = read_menu("size2.txt")
 acute = read_menu("acute.txt")
 drink = read_menu("drink.txt")
 
+if __name__ == "__main__":
+    app.run(debug=True)
