@@ -1,8 +1,7 @@
-import json
-import os
+from flask import Flask, render_template, request
 import sqlite3
 
-from flask import Flask, render_template, request
+app = Flask(__name__)
 
 def save_order(order):
     con = sqlite3.connect("orders.db")
@@ -39,8 +38,6 @@ cur.execute(
 con.commit()
 con.close()
 
-app = Flask(__name__)
-
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -49,24 +46,23 @@ def index():
 def greet(name='Stranger'):
     return render_template("greeting.html", name=name)
 
-@app.route('/order', methods=('GET', 'POST'))
+@app.route('/order', methods=['GET', 'POST'])
 def order():
     if request.method == 'POST':
-        new_order = {"name": request.form["name"],
-                     "filling": request.form["filling"],
-                     "sauce": request.form["sauce"],
-                     "size1": request.form["size1"],
-                     "size2": request.form["size2"],
-                     "acute": request.form["acute"],
-                     "drink": request.form["drink"],
-                     }
+        new_order = {
+            "name": request.form["name"],
+            "filling": request.form["filling"],
+            "sauce": request.form["sauce"],
+            "size1": request.form["size1"],
+            "size2": request.form["size2"],
+            "acute": request.form["acute"],
+            "drink": request.form["drink"],
+        }
         save_order(new_order)
-        return render_template(
-            "print.html", new_order=new_order
-          )
-    return render_template("order.html", filling=filling, sauce=sauce, size1=size1, size2=size2, acute=acute, drink=drink )
+        return render_template("print.html", new_order=new_order)
+    return render_template("order.html", filling=filling, sauce=sauce, size1=size1, size2=size2, acute=acute, drink=drink)
 
-@app.route("/order", methods=["GET"])
+@app.route("/list", methods=["GET"])
 def list():
     orders = get_orders()
     return render_template("list.html", orders=orders)
