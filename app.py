@@ -66,7 +66,7 @@ def order():
           )
     return render_template("order.html", filling=filling, sauce=sauce, size1=size1, size2=size2, acute=acute, drink=drink )
 
-@app.route("/list", methods=["GET"])
+@app.route("/order", methods=["GET"])
 def list():
     orders = get_orders()
     return render_template("list.html", orders=orders)
